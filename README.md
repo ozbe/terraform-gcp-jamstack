@@ -90,7 +90,7 @@ Create `test.tfvars` with the variable `project-id` and the PROJECT_ID for your 
 
 ```
 # test.tfvars
-project_id = <PROJECT_ID>
+project_id = "<PROJECT_ID>"
 ```
  
 Now that you've seen an example, go make `test.tfvars`.
@@ -124,6 +124,12 @@ After [selecting](#select) your workspace and running [plan](#plan)
 ```
 $ terraform apply "test_plan""
 ```
+
+## Migration
+**TODO** - https://cloud.google.com/sql/docs/postgres/connect-admin-proxy#macos-64-bit
+
+## Deploy
+**TODO**
 
 ## Clean up
 **FIXME**
