@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:10
+    ports:
+      - "5432:5432"
+    environment: 
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - "/var/run/postgres/postgres.sock:/var/run/postgres/postgres.sock"
+  server:
+    image: node:15
+    working_dir: /server
+    command: npm run dev
+    ports:
+      - "4000:4000"
+    environment: 
+      DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/myapp'
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/server
+
+volumes:
+  postgres:
