@@ -9,8 +9,8 @@ resource "google_storage_bucket" "backend" {
 # https://cloud.google.com/functions/docs/networking/connecting-vpc#configuring
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/vpc_access_connector
 resource "google_vpc_access_connector" "backend" {
-  name          = "vpc-con"
-  ip_cidr_range = "10.8.0.0/28" // FIXME - use cloudsql
+  name          = "backend-vpc-connector"
+  ip_cidr_range = google_compute_global_address.postgress_sql.address
   network       = "default"
 }
 
@@ -23,41 +23,25 @@ resource "google_cloudfunctions_function" "backend" {
   source_archive_bucket = google_storage_bucket.backend.name
   source_archive_object = "index.zip"
   trigger_http          = true
-  entry_point           = "helloGET" # FIXME
-  vpc_connector = google_vpc_access_connector.backend
+  entry_point           = "handler"
+  vpc_connector = google_vpc_access_connector.backend.id
 
-  # environment_variables = {
-  #   MY_ENV_VAR = "my-env-var-value"
-  # }
+  environment_variables = {
+    DATABASE_URL = "postgresql://${google_sql_user.backend_user.name}:${random_password.backend_sql_password.result}@${google_sql_database_instance.postgres.private_ip_address}:5432/${google_sql_database.backend.name}"
+  }
 }
 
-
 # https://cloud.google.com/load-balancing/docs/https/setting-up-https-serverless#gcloud:-cloud-functions
-
-# google_compute_network_endpoint_group
-# gcloud compute network-endpoint-groups create SERVERLESS_NEG_NAME \
-#     --region=us-central1 \
-#     --network-endpoint-type=serverless  \
-#     --cloud-run-service=CLOUD_RUN_SERVICE_NAME
-
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_network_endpoint_group
 resource "google_compute_region_network_endpoint_group" "backend" {
   name                  = "backend-neg"
   network_endpoint_type = "SERVERLESS"
-  region                = "us-central1" # FIXME - region
+  region                = var.region
 
   cloud_function {
     function = google_cloudfunctions_function.backend.name
   }
 }
-
-# gcloud compute backend-services create BACKEND_SERVICE_NAME \
-    # --global
-
-# gcloud compute backend-services add-backend BACKEND_SERVICE_NAME \
-#     --global \
-#     --network-endpoint-group=SERVERLESS_NEG_NAME \
-#     --network-endpoint-group-region=us-central1
 
 resource "google_compute_backend_service" "backend" {
   name = "backend-service"
@@ -65,8 +49,3 @@ resource "google_compute_backend_service" "backend" {
     group = google_compute_region_network_endpoint_group.backend.name
   }
 }
-
-# TODO - connect to url map
-
-# db secret https://dev.to/googlecloud/using-secrets-in-google-cloud-functions-5aem
-# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secret_manager_secret

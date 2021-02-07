@@ -7,11 +7,11 @@ output "region" {
 }
 
 output "frontend_bucket" {
-  value       = module.app.cdn_bucket_name
+  value       = module.app.frontend_bucket
   description = "Name of public bucker to write frontend assets"
 }
 
 output "ingress_ip" {
-  value       = module.app.cdn_ip
+  value       = module.app.ingress_ip
   description = "Ingress endpoint"
 }

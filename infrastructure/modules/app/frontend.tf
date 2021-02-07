@@ -1,9 +1,3 @@
-#
-# frontend
-# 
-# Host assets in GCS and serve them via Load balancer, fronted by Cloud CDN
-#
-
 resource "google_storage_bucket" "frontend" {
   name = "${var.project_name}-frontend"
 }
