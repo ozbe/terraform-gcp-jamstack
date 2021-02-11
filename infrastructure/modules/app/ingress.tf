@@ -3,22 +3,22 @@ resource "google_compute_url_map" "ingress" {
 
   host_rule {
     hosts = ["*"]
-    path_matcher = "assets"
+    path_matcher = "api"
   }
 
   path_matcher {
-    name = "assets"
-    default_service = google_compute_backend_bucket.frontend.id
+    name = "api"
+    default_service = google_compute_backend_service.backend.id
   }
 
-  default_service = google_compute_backend_service.backend.id
+  default_service = google_compute_backend_bucket.frontend.id
 }
 
 # This would ideally be google_compute_target_https_proxy
 # https://cloud.google.com/load-balancing/docs/ssl-certificates/self-managed-certs#gcloud
 resource "google_compute_target_http_proxy" "ingress" {
   name = "ingress-target-proxy"
-  url_map = google_compute_url_map.ingress.self_link
+  url_map = google_compute_url_map.ingress.id
 }
 
 resource "google_compute_global_address" "ingress" {
@@ -31,7 +31,7 @@ resource "google_compute_global_forwarding_rule" "ingress" {
   ip_address = google_compute_global_address.ingress.address
   ip_protocol = "TCP"
   port_range = "80"
-  target = google_compute_target_http_proxy.ingress.self_link
+  target = google_compute_target_http_proxy.ingress.id
 }
 
 # Self-signed certificates

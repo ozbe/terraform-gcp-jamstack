@@ -1,16 +1,12 @@
-# Zero to GCP Jamstack with Terraform
+# Terraform GCP Jamstack
 
 ## DISCLAIMER
  This repo is NOT operational. 
  
  This project has just been jumpstarted with source from other personal repos that will be modified to meet the goal of this project
 
-## TODO
-* choose a basic apollo app apollo cloud functions [apollo-server-cloud-functions](https://www.npmjs.com/package/apollo-server-cloud-functions)
-
-
 ## Prereqs
-* **FIXME**`glcoud` configured to use an account with `Project Owner` permissions to _the_ GCP Project (`project_id`)
+* **FIXME**`glcoud` configured to use an account with `Project Owner` permissions to _the_ GCP Project (`PROJECT_ID`)
 
 ## Setup and Deploy
 

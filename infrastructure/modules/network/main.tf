@@ -1,5 +1,3 @@
-resource "google_compute_network" "private_network" {
-  provider = google-beta
-
-  name = "private-network"
+resource "google_compute_network" "network" {
+  name = "${var.project_name}-network"
 }

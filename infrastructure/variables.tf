@@ -14,5 +14,6 @@ variable "services" {
     "cloudfunctions.googleapis.com",
     "compute.googleapis.com",
     "container.googleapis.com",
+    "servicenetworking.googleapis.com",
   ]
 }
