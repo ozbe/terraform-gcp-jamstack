@@ -9,3 +9,11 @@ variable "region" {
 variable "private_network_id" {
   type = string
 }
+
+variable deletion_protection {
+  type = bool
+}
+
+variable db_password {
+  type = string
+}

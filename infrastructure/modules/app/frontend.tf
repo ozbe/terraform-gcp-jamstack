@@ -1,5 +1,6 @@
 resource "google_storage_bucket" "frontend" {
   name = "${var.project_name}-frontend"
+  force_destroy = !var.deletion_protection
 }
 
 resource "google_storage_default_object_access_control" "frontend_read" {

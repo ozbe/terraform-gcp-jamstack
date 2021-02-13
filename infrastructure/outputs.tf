@@ -15,3 +15,15 @@ output "region" {
 #   value       = module.app.ingress_ip
 #   description = "Ingress endpoint"
 # }
+
+output "app_db_instance_connect_name" {
+  value = module.app.db_instance_connect_name
+}
+
+output "app_db_name" {
+  value = module.app.db_name
+}
+
+output "app_db_user" {
+  value = module.app.db_user
+}

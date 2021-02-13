@@ -1,6 +1,3 @@
-# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_database_instance
-# postgres
-
 resource "google_compute_global_address" "postgress_sql" {
   name          = "postgres-sql-ip-address"
   purpose       = "VPC_PEERING"
@@ -18,6 +15,7 @@ resource "google_service_networking_connection" "postgres_sql" {
 resource "google_sql_database_instance" "postgres" {
   name   = "postgres"
   database_version = "POSTGRES_10"
+  deletion_protection = var.deletion_protection
 
   depends_on = [google_service_networking_connection.postgres_sql]
 
@@ -31,22 +29,14 @@ resource "google_sql_database_instance" "postgres" {
 }
 
 resource "google_sql_database" "backend" {
-  name     = "app"
+  name     = "backend"
   instance = google_sql_database_instance.postgres.name
-}
-
-# Create postgres user
-# https://cloud.google.com/sql/docs/postgres/create-manage-iam-users#gcloud
-#  https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_user
-
-resource "random_password" "backend_sql_password" {
-  length = 32
 }
 
 resource "google_sql_user" "backend_user" {
-  name     = "app"
+  name     = "backend"
   instance = google_sql_database_instance.postgres.name
-  password = random_password.backend_sql_password.result
+  password = var.db_password
 }
 
 # grant user permissions
