@@ -14,15 +14,15 @@
 **FIXME**
 
 1. [GCP Project](#gcp-project)
-2. [Terraform Setup](#terraform)
-4. [Deploy Developer Assets](#deploy-developer-assets)
-5. [View assets](#view-assets)
-
-1. [terraform init](#terraform-init)
-1. [Environment tfvars](#environment-tfvars)
-2. [Workspaces](#workspaces)
-3. [Plan](#plan)
-4. [Apply](#apply)
+2. [Infrastructure](#infrastructure)
+3. Backend
+  1. Envrionment
+  2. Migrate
+  3. Deploy
+4. Frontend
+  1. Envrionment
+  2. Deploy
+5. View frontend
 
 ## GCP Project
 ... and service account
@@ -30,8 +30,6 @@
 We need a GCP Project and Service Account with the Project Owner role. 
 
 You may already a project and SA account already, but these directions will assume that you are starting from scratch.
-
-**TODO** note 
 
 ### Create GCP Project
 
@@ -74,66 +72,104 @@ $ gcloud config set account <SA_NAME>@<PROJECT_ID>.iam.gserviceaccount.com
 $ gcloud auth application-default login
 ```
 
-## Terraform init
+## Infrastructure
 
+We will manage our infrastructure with Terraform. 
+
+### Init
+
+To get started we will make sure we are working in the `infrastructure` folder and init Terraform:
 ```
+$ cd infrastructure
 $ terraform init
 ```
 
-## Environment tfvars
+### Environment
 
-Create `test.tfvars` with the variable `project-id` and the PROJECT_ID for your GCP project.
+Create `test.tfvars` with the required variables `project_id` and `app_db_password`:
+* `project_id` is the GCP project id you will be using
+* `app_db_password` is a random secure string to use for the backend DB password.
+
+Optionally, you can set `deletion_protection` to false if you want to be able to teardown the infrastructure with `terraform destroy` later. 
 
 ```
 # test.tfvars
+# Required
 project_id = "<PROJECT_ID>"
+app_db_password     = "<APP_DB_PASSWORD>"
+# Optional
+deletion_protection = false
 ```
  
 Now that you've seen an example, go make `test.tfvars`.
 
-## Workspaces
+### Workspace
 
-Terraform Workspaces are used to isolate state. Lets make a one for `test`
-
-### Setup
+Terraform Workspaces are used to isolate state. Lets make a one for `test`:
 ```
 $ terraform workspace new test
 ```
 
-### Select
-You use select to change workspaces. When you create a new workspace it is automatcially selected. If you're following along, you shouldn't have to run the command, but you may need it later.
-
-```
-$ terraform workspace select test
-```
-
 ## Plan
-After [selecting](#select) your workspace, plan
-
+After setting up your `test` workspace, now run Terraform plan:
 ```
 $ terraform plan -out=test_plan -var-file=test.tfvars
 ```
 
 ## Apply
 
-After [selecting](#select) your workspace and running [plan](#plan)
+After running [plan](#plan) we can apply the changes:
 ```
 $ terraform apply "test_plan""
 ```
 
-## Migration
-**TODO** - https://cloud.google.com/sql/docs/postgres/connect-admin-proxy#macos-64-bit
+We have not setup all of the infrastructure we will need to run the backend and frontend.
 
-## Deploy
-**TODO**
+## Backend
+
+The backend is an Apollo Server that with run in a Google Cloud Function.
+
+### Environment
+
+For local development and running migrations the backend requires the databause to be configured via an environment variable.
+
+Create a `.env` file in `/backend` with the variable `DATABASE_URL`:
+```
+DATABASE_URL="postgresql://app:[PASSWORD]@localhost:5432/app?sslmode=disable"
+```
+Be sure to replace `[PASSWORD]` with the password you set in `test.tfvars`.
+
+### Migration
+
+1. `./scripts/sql_proxy.sh`
+2. `npx prisma init`
+3. `npx prisma migrate dev --preview-feature`
+
+### Deploy
+
+1. `npm run deploy`
+
+## Frontend
+
+The frontend is an React app that with be served via Cloud CDN.
+
+### Environment
+
+**TODO** Set API endpoint
+
+### Deploy
+
+1. `./scripts/upload_frontend_assets.sh`
 
 ## Clean up
-**FIXME**
 
-Now to undo everything we did.
+Now to undo everything we did. 
 
-### Destroy
-After [selecting](#select) your workspace
+To clean up, we _only_ need to work with the infrastructure and GCP project. 
+By removing the infrastructure the frontend and backend are also cleaned up.
+
+### Infrastructure
+
 ```
 $ terraform destroy -var-file=test.tfvars
 ```
